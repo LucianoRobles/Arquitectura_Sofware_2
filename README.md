@@ -640,38 +640,42 @@ Esta decisión mejora la organización del acceso externo y evita depender de m�
 
 ## Capturas de pantalla
 
-Las capturas se encuentran en:
+Las capturas se encuentran en la carpeta:
 
-```txt
-docs/screenshots/
-```
+`docs/screenshots/`
 
-Capturas sugeridas:
-
-| Archivo                     | Descripción                                 |
-| --------------------------- | ------------------------------------------- |
-| `01-pods-running.png`       | Pods corriendo en el namespace `arqsw2`     |
-| `02-services.png`           | Services activos                            |
-| `03-ingress.png`            | Ingress configurado                         |
-| `04-api-health.png`         | Respuesta de `http://app.local/api/health`  |
+| Captura | Descripción |
+|---|---|
+| `01-pods-running.png` | Pods corriendo en el namespace `arqsw2` |
+| `02-services.png` | Services activos |
+| `03-ingress.png` | Ingress configurado |
+| `04-api-health.png` | Respuesta de `http://app.local/api/health` |
 | `05-frontend-app-local.png` | Frontend accedido desde `http://app.local/` |
-| `06-fastapi-docs.png`       | Swagger UI en `http://app.local/api/docs`   |
+| `06-fastapi-docs.png` | Swagger UI en `http://app.local/api/docs` |
 
-Ejemplo de referencia en Markdown:
+### Pods corriendo
 
-```md
 ![Pods corriendo](docs/screenshots/01-pods-running.png)
+
+### Services activos
 
 ![Services activos](docs/screenshots/02-services.png)
 
+### Ingress configurado
+
 ![Ingress configurado](docs/screenshots/03-ingress.png)
+
+### API Health
 
 ![API Health](docs/screenshots/04-api-health.png)
 
+### Frontend en app.local
+
 ![Frontend app.local](docs/screenshots/05-frontend-app-local.png)
 
+### FastAPI Docs
+
 ![FastAPI Docs](docs/screenshots/06-fastapi-docs.png)
-```
 
 ---
 
