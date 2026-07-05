@@ -5,6 +5,10 @@ metadata:
   namespace: arqsw2
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.local
+      secretName: app-local-tls
   rules:
     - host: app.local
       http:

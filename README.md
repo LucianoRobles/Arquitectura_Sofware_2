@@ -14,17 +14,33 @@
 * [Estructura del repositorio](#estructura-del-repositorio)
 * [Recursos Kubernetes utilizados](#recursos-kubernetes-utilizados)
 * [Prerrequisitos](#prerrequisitos)
-* [Construcción de imágenes Docker](#construcción-de-imágenes-docker)
-* [Despliegue en Minikube](#despliegue-en-minikube)
-* [Verificación del Punto 1](#verificación-del-punto-1)
-* [Configuración de Ingress](#configuración-de-ingress)
-* [Configuración de hosts en Windows](#configuración-de-hosts-en-windows)
-* [Uso de minikube tunnel en Windows](#uso-de-minikube-tunnel-en-windows)
-* [Verificación del Punto 2](#verificación-del-punto-2)
-* [Justificación de uso de Ingress](#justificación-de-uso-de-ingress)
-* [Capturas de pantalla](#capturas-de-pantalla)
-* [Estado actual](#estado-actual)
 
+* [Punto 1 — Kubernetes + Minikube](#punto-1--kubernetes--minikube)
+  * [Iniciar Minikube](#iniciar-minikube)
+  * [Habilitar Ingress Controller](#habilitar-ingress-controller)
+  * [Construcción de imágenes Docker](#construcción-de-imágenes-docker)
+  * [Despliegue en Minikube](#despliegue-en-minikube)
+  * [Verificación del Punto 1](#verificación-del-punto-1)
+
+* [Punto 2 — Ingress](#punto-2--ingress)
+  * [Configuración de Ingress](#configuración-de-ingress)
+  * [Configuración de hosts en Windows](#configuración-de-hosts-en-windows)
+  * [Uso de minikube tunnel en Windows](#uso-de-minikube-tunnel-en-windows)
+  * [Verificación del Punto 2](#verificación-del-punto-2)
+  * [Documentación Swagger de FastAPI](#documentación-swagger-de-fastapi)
+  * [Justificación de uso de Ingress](#justificación-de-uso-de-ingress)
+  * [Capturas de pantalla](#capturas-de-pantalla)
+
+* [Punto 3 — HTTPS con cert-manager](#punto-3--https-con-cert-manager)
+  * [Instalación de cert-manager](#instalación-de-cert-manager)
+  * [Creación del Issuer self-signed](#creación-del-issuer-self-signed)
+  * [Creación del certificado TLS](#creación-del-certificado-tls)
+  * [Configuración TLS en el Ingress](#configuración-tls-en-el-ingress)
+  * [Prueba de HTTPS](#prueba-de-https)
+  * [Diferencia entre certificado self-signed y certificado firmado por una CA pública](#diferencia-entre-certificado-self-signed-y-certificado-firmado-por-una-ca-pública)
+  * [Capturas de pantalla del Punto 3](#capturas-de-pantalla-del-punto-3)
+
+* [Comandos útiles](#comandos-útiles)
 ---
 
 ## Descripción de la aplicación
@@ -95,7 +111,7 @@ flowchart TD
 ## Estructura del repositorio
 
 ```txt
-Arquitectura_Sofware_2/
+Arquitectura_Software_2/
 ├── app/
 │   ├── backend/
 │   │   ├── Dockerfile
@@ -119,7 +135,9 @@ Arquitectura_Sofware_2/
 │   ├── 06-backend-service.yaml
 │   ├── 07-frontend-deployment.yaml
 │   ├── 08-frontend-service.yaml
-│   └── 09-ingress.yaml
+│   ├── 09-ingress.yaml
+│   ├── 10-selfsigned-issuer.yaml
+│   └── 11-certificate.yaml
 │
 ├── docs/
 │   └── screenshots/
@@ -282,13 +300,14 @@ git --version
 | `helm : El término 'helm' no se reconoce...` | Helm quedó instalado, pero Windows no encuentra `helm.exe` en la variable de entorno `PATH`. | Agregar temporalmente la carpeta donde está `helm.exe` al `PATH` de la terminal actual. |
 
 ```powershell
-$env:Path += ";C:\Users\julia\AppData\Local\Microsoft\WinGet\Packages\Helm.Helm_Microsoft.Winget.Source_8wekyb3d8bbwe\windows-amd64"
+$env:Path += ";C:\Users\Julian\AppData\Local\Microsoft\WinGet\Packages\Helm.Helm_Microsoft.Winget.Source_8wekyb3d8bbwe\windows-amd64"
 helm version
 ```
 
+> La ruta puede variar según el usuario de Windows. En este caso, el usuario era `Julian`.
 ---
-
-## Iniciar Minikube
+## Punto 1 — Kubernetes + Minikube
+### Iniciar Minikube
 
 ```powershell
 minikube start --driver=docker
@@ -310,7 +329,7 @@ minikube   Ready    control-plane   ...   ...
 
 ---
 
-## Habilitar Ingress Controller
+### Habilitar Ingress Controller
 
 ```powershell
 minikube addons enable ingress
@@ -330,7 +349,7 @@ ingress-nginx-controller-xxxxxxxxxx-xxxxx   1/1   Running
 
 ---
 
-## Construcción de imágenes Docker
+### Construcción de imágenes Docker
 
 Para que Minikube pueda usar las imágenes locales sin subirlas a un registry externo, se configuró la terminal para construir directamente dentro del entorno Docker de Minikube:
 
@@ -343,7 +362,7 @@ minikube -p minikube docker-env --shell powershell | Invoke-Expression
 ### Construir imagen del backend
 
 ```powershell
-cd C:\Users\Windows\Desktop\Arquitectura_Sofware_2\app\backend
+cd C:\Users\Windows\Desktop\Arquitectura_Software_2\app\backend
 docker build --no-cache -t tasks-backend:local .
 ```
 
@@ -352,18 +371,18 @@ docker build --no-cache -t tasks-backend:local .
 ### Construir imagen del frontend
 
 ```powershell
-cd C:\Users\Windows\Desktop\Arquitectura_Sofware_2\app\frontend
+cd C:\Users\Windows\Desktop\Arquitectura_Software_2\app\frontend
 docker build --no-cache -t tasks-frontend:local .
 ```
 
 ---
 
-## Despliegue en Minikube
+### Despliegue en Minikube
 
 Desde la raíz del proyecto:
 
 ```powershell
-cd C:\Users\Windows\Desktop\Arquitectura_Sofware_2
+cd C:\Users\Windows\Desktop\Arquitectura_Software_2
 kubectl apply -f manifests/
 ```
 
@@ -371,7 +390,7 @@ Este comando aplica todos los manifiestos del directorio `manifests/`.
 
 ---
 
-## Verificación del Punto 1
+### Verificación del Punto 1
 
 ### Verificar pods
 
@@ -468,8 +487,8 @@ CTRL + C
 ```
 
 ---
-
-## Configuración de Ingress
+## Punto 2 — Ingress
+### Configuración de Ingress
 
 Se configuró un Ingress NGINX para exponer frontend y backend bajo un mismo dominio local:
 
@@ -491,7 +510,7 @@ Reglas configuradas:
 /api   -> backend-service:8000
 ```
 
-Contenido del Ingress:
+Contenido inicial del Ingress, antes de agregar TLS:
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -523,7 +542,7 @@ spec:
 
 ---
 
-## Configuración de hosts en Windows
+### Configuración de hosts en Windows
 
 En Windows se configuró el archivo:
 
@@ -565,7 +584,7 @@ Se vació correctamente la caché de resolución de DNS.
 
 ---
 
-## Uso de minikube tunnel en Windows
+### Uso de minikube tunnel en Windows
 
 En este entorno Windows, usando Minikube con Docker, fue necesario ejecutar:
 
@@ -584,7 +603,7 @@ Starting tunnel for service app-ingress.
 
 ---
 
-## Verificación del Punto 2
+### Verificación del Punto 2
 
 Con `minikube tunnel` activo, probar:
 
@@ -615,7 +634,7 @@ http://app.local/api/docs
 
 ---
 
-## Documentación Swagger de FastAPI
+### Documentación Swagger de FastAPI
 
 Para acceder a la documentación automática de FastAPI a través del Ingress se configuró la aplicación con:
 
@@ -645,7 +664,7 @@ No se utilizó `root_path="/api"` porque esa configuración provocaba errores `4
 
 ---
 
-## Justificación de uso de Ingress
+### Justificación de uso de Ingress
 
 Se eligió Ingress porque permite centralizar el acceso HTTP a la aplicación mediante un único punto de entrada.
 
@@ -659,7 +678,7 @@ Esta decisión mejora la organización del acceso externo y evita depender de m�
 
 ---
 
-## Capturas de pantalla
+### Capturas de pantalla
 
 Las capturas se encuentran en la carpeta:
 
@@ -700,33 +719,292 @@ Las capturas se encuentran en la carpeta:
 
 ---
 
-## Estado actual
+## Punto 3 — HTTPS con cert-manager
 
-### Punto 1 — Kubernetes + Minikube
+Para completar la exposición segura de la aplicación, se configuró HTTPS sobre el Ingress utilizando `cert-manager` y un certificado self-signed para el dominio local:
 
-Estado: **completado**
+```txt
+https://app.local/
+https://app.local/api/
+```
 
-* Frontend desplegado como `Deployment`.
-* Backend desplegado como `Deployment`.
-* PostgreSQL desplegado como `StatefulSet`.
-* Configuración sensible almacenada en `Secret`.
-* Configuración no sensible almacenada en `ConfigMap`.
-* Services internos configurados.
-* Readiness Probe y Liveness Probe configuradas en el backend.
-* Aplicación completa corriendo en Minikube.
+El objetivo de este punto fue agregar TLS al Ingress, permitiendo acceder tanto al frontend como al backend mediante HTTPS.
 
 ---
 
-### Punto 2 — Ingress
+### Instalación de cert-manager
 
-Estado: **completado**
+Se instaló `cert-manager` en el cluster de Kubernetes aplicando el manifiesto oficial:
 
-* Ingress NGINX configurado.
-* Dominio local `app.local` configurado.
-* Frontend accesible por `http://app.local/`.
-* Backend accesible por `http://app.local/api/`.
-* Documentación Swagger accesible por `http://app.local/api/docs`.
-* En Windows se documenta el uso de `minikube tunnel`.
+```powershell
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+```
+
+Luego se verificó que los pods de cert-manager quedaran corriendo correctamente:
+
+```powershell
+kubectl get pods -n cert-manager
+```
+
+Resultado esperado:
+
+```txt
+cert-manager-xxxxx              1/1   Running
+cert-manager-cainjector-xxxxx   1/1   Running
+cert-manager-webhook-xxxxx      1/1   Running
+```
+
+---
+
+### Creación del Issuer self-signed
+
+Se creó un `Issuer` de tipo self-signed dentro del namespace `arqsw2`.
+
+Archivo:
+
+```txt
+manifests/10-selfsigned-issuer.yaml
+```
+
+Contenido:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+  namespace: arqsw2
+spec:
+  selfSigned: {}
+```
+
+Aplicar el manifiesto:
+
+```powershell
+kubectl apply -f manifests/10-selfsigned-issuer.yaml
+```
+
+Verificar el Issuer:
+
+```powershell
+kubectl get issuer -n arqsw2
+```
+
+Resultado esperado:
+
+```txt
+NAME                READY   AGE
+selfsigned-issuer   True    ...
+```
+
+---
+
+### Creación del certificado TLS
+
+Luego se creó un recurso `Certificate` para el dominio `app.local`.
+
+Archivo:
+
+```txt
+manifests/11-certificate.yaml
+```
+
+Contenido:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: app-local-certificate
+  namespace: arqsw2
+spec:
+  secretName: app-local-tls
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+  dnsNames:
+    - app.local
+```
+
+Aplicar el manifiesto:
+
+```powershell
+kubectl apply -f manifests/11-certificate.yaml
+```
+
+Verificar el certificado:
+
+```powershell
+kubectl get certificate -n arqsw2
+```
+
+Resultado esperado:
+
+```txt
+NAME                    READY   SECRET          AGE
+app-local-certificate   True    app-local-tls   ...
+```
+
+También se verificó que cert-manager generara el Secret TLS correspondiente:
+
+```powershell
+kubectl get secret app-local-tls -n arqsw2
+```
+
+Resultado esperado:
+
+```txt
+NAME            TYPE                DATA   AGE
+app-local-tls   kubernetes.io/tls   3      ...
+```
+
+---
+
+### Configuración TLS en el Ingress
+
+Se modificó el Ingress para asociarlo al Secret TLS generado por cert-manager.
+
+Archivo:
+
+```txt
+manifests/09-ingress.yaml
+```
+
+Contenido final del Ingress:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: arqsw2
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.local
+      secretName: app-local-tls
+  rules:
+    - host: app.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+```
+
+Aplicar el Ingress actualizado:
+
+```powershell
+kubectl apply -f manifests/09-ingress.yaml
+```
+
+Verificar el Ingress:
+
+```powershell
+kubectl get ingress -n arqsw2
+```
+
+Resultado esperado:
+
+```txt
+NAME          CLASS   HOSTS       ADDRESS     PORTS     AGE
+app-ingress   nginx   app.local   localhost   80, 443   ...
+```
+
+---
+
+### Prueba de HTTPS
+
+Para acceder a `app.local` desde Windows se debe mantener abierto `minikube tunnel` en una terminal:
+
+```powershell
+minikube tunnel
+```
+
+Luego se probó el endpoint de salud del backend usando HTTPS:
+
+```powershell
+curl.exe -k https://app.local/api/health
+```
+
+Se utiliza `-k` porque el certificado es self-signed y no está firmado por una autoridad certificante pública reconocida por el sistema operativo.
+
+Resultado esperado:
+
+```json
+{"status":"ok","service":"backend-fastapi"}
+```
+
+También se verificó el acceso desde el navegador:
+
+```txt
+https://app.local/
+```
+
+Al ingresar desde el navegador aparece una advertencia de seguridad. Esto es esperable porque el certificado es self-signed. Para continuar, se debe ingresar en las opciones avanzadas del navegador y aceptar el acceso al sitio.
+
+También se puede probar:
+
+```txt
+https://app.local/api/health
+https://app.local/api/docs
+```
+
+---
+
+### Diferencia entre certificado self-signed y certificado firmado por una CA pública
+
+Un certificado self-signed es un certificado firmado por la misma entidad que lo emite. En este trabajo práctico se utilizó este tipo de certificado porque el dominio `app.local` es local y no existe públicamente en Internet. Este enfoque sirve para pruebas, laboratorios y entornos de desarrollo, ya que permite habilitar HTTPS sin depender de una autoridad certificante externa. Sin embargo, los navegadores no confían automáticamente en certificados self-signed, por eso muestran una advertencia de seguridad al ingresar al sitio. En un entorno productivo real, se utilizaría un certificado firmado por una CA pública, como Let’s Encrypt u otra autoridad certificante reconocida, para que los navegadores confíen automáticamente en el sitio y no muestren advertencias.
+
+---
+
+### Capturas de pantalla del Punto 3
+
+Las capturas correspondientes al Punto 3 se encuentran en:
+
+```txt
+docs/screenshots/
+```
+
+| Archivo                    | Descripción                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| `07-cert-manager-pods.png` | Pods de cert-manager corriendo correctamente                                  |
+| `08-selfsigned-issuer.png` | Issuer self-signed creado y en estado Ready                                   |
+| `09-certificate-ready.png` | Certificate en estado Ready, Secret TLS creado e Ingress con puertos 80 y 443 |
+| `10-https-health.png`      | Respuesta exitosa de `https://app.local/api/health` usando HTTPS              |
+| `11-https-frontend.png`    | Frontend accesible desde `https://app.local/`                                 |
+
+### cert-manager instalado
+
+![cert-manager pods](docs/screenshots/07-cert-manager-pods.png)
+
+### Issuer self-signed
+
+![Self-signed Issuer](docs/screenshots/08-selfsigned-issuer.png)
+
+### Certificate, Secret TLS e Ingress
+
+![Certificate Ready](docs/screenshots/09-certificate-ready.png)
+
+### API Health por HTTPS
+
+![HTTPS Health](docs/screenshots/10-https-health.png)
+
+### Frontend por HTTPS
+
+![HTTPS Frontend](docs/screenshots/11-https-frontend.png)
 
 ---
 
