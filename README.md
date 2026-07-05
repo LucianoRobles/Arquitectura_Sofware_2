@@ -95,7 +95,7 @@ flowchart TD
 ## Estructura del repositorio
 
 ```txt
-Arquitectura_2_CarpetaTP/
+Arquitectura_Sofware_2/
 ├── app/
 │   ├── backend/
 │   │   ├── Dockerfile
@@ -322,7 +322,7 @@ minikube -p minikube docker-env --shell powershell | Invoke-Expression
 ### Construir imagen del backend
 
 ```powershell
-cd C:\Users\Windows\Desktop\Arquitectura_2_CarpetaTP\app\backend
+cd C:\Users\Windows\Desktop\Arquitectura_Sofware_2\app\backend
 docker build --no-cache -t tasks-backend:local .
 ```
 
@@ -331,7 +331,7 @@ docker build --no-cache -t tasks-backend:local .
 ### Construir imagen del frontend
 
 ```powershell
-cd C:\Users\Windows\Desktop\Arquitectura_2_CarpetaTP\app\frontend
+cd C:\Users\Windows\Desktop\Arquitectura_Sofware_2\app\frontend
 docker build --no-cache -t tasks-frontend:local .
 ```
 
@@ -342,7 +342,7 @@ docker build --no-cache -t tasks-frontend:local .
 Desde la raíz del proyecto:
 
 ```powershell
-cd C:\Users\Windows\Desktop\Arquitectura_2_CarpetaTP
+cd C:\Users\Windows\Desktop\Arquitectura_Sofware_2
 kubectl apply -f manifests/
 ```
 
