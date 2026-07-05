@@ -42,7 +42,7 @@ Fue elegida porque representa una arquitectura web clásica de tres capas: prese
 
 El objetivo principal del trabajo práctico no es la complejidad funcional de la aplicación, sino el diseño, despliegue y operación de la infraestructura que la rodea.
 
----
+-----
 
 ## Arquitectura lógica
 
