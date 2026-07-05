@@ -275,6 +275,17 @@ git --version
 | Helm | `winget install -e --id Helm.Helm` |
 | Git | `winget install -e --id Git.Git` |
 
+### Solución si Helm no se reconoce en PowerShell
+
+| Problema | Causa probable | Solución |
+|---|---|---|
+| `helm : El término 'helm' no se reconoce...` | Helm quedó instalado, pero Windows no encuentra `helm.exe` en la variable de entorno `PATH`. | Agregar temporalmente la carpeta donde está `helm.exe` al `PATH` de la terminal actual. |
+
+```powershell
+$env:Path += ";C:\Users\julia\AppData\Local\Microsoft\WinGet\Packages\Helm.Helm_Microsoft.Winget.Source_8wekyb3d8bbwe\windows-amd64"
+helm version
+```
+
 ---
 
 ## Iniciar Minikube
