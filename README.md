@@ -39,7 +39,17 @@
   * [Prueba de HTTPS](#prueba-de-https)
   * [Diferencia entre certificado self-signed y certificado firmado por una CA pública](#diferencia-entre-certificado-self-signed-y-certificado-firmado-por-una-ca-pública)
   * [Capturas de pantalla del Punto 3](#capturas-de-pantalla-del-punto-3)
-
+* [Punto 4 — Observabilidad con Loki, Promtail, Prometheus y Grafana](#punto-4--observabilidad-con-loki-promtail-prometheus-y-grafana)
+  * [Namespace de observabilidad](#namespace-de-observabilidad)
+  * [Instalación de Loki](#instalación-de-loki)
+  * [Instalación de Promtail](#instalación-de-promtail)
+  * [Instalación de Grafana](#instalación-de-grafana)
+  * [Configuración de Loki como datasource en Grafana](#configuración-de-loki-como-datasource-en-grafana)
+  * [Consulta de logs en Grafana](#consulta-de-logs-en-grafana)
+  * [Instalación de Prometheus](#instalación-de-prometheus)
+  * [Configuración de Prometheus como datasource en Grafana](#configuración-de-prometheus-como-datasource-en-grafana)
+  * [Consulta de métricas en Grafana](#consulta-de-métricas-en-grafana)
+  * [Capturas de pantalla del Punto 4](#capturas-de-pantalla-del-punto-4)
 * [Comandos útiles](#comandos-útiles)
 ---
 
@@ -1005,6 +1015,399 @@ docs/screenshots/
 ### Frontend por HTTPS
 
 ![HTTPS Frontend](docs/screenshots/11-https-frontend.png)
+
+---
+## Punto 4 — Observabilidad con Loki, Promtail, Prometheus y Grafana
+
+Para incorporar observabilidad a la aplicación desplegada en Kubernetes, se configuraron herramientas para centralizar logs y visualizar métricas del cluster.
+
+La solución utilizada fue:
+
+| Herramienta | Función |
+|---|---|
+| Loki | Almacenamiento y consulta de logs |
+| Promtail | Recolección de logs desde los pods |
+| Grafana | Visualización de logs y métricas |
+| Prometheus | Recolección y consulta de métricas del cluster |
+
+El objetivo de este punto fue poder observar el comportamiento de la aplicación y del entorno Kubernetes desde una interfaz centralizada.
+
+---
+
+### Namespace de observabilidad
+
+Se creó un namespace separado para aislar los recursos de observabilidad:
+
+```powershell
+kubectl create namespace observability
+```
+
+Verificación:
+
+```powershell
+kubectl get ns
+```
+
+---
+
+### Instalación de Loki
+
+Primero se agregó el repositorio Helm de Grafana:
+
+```powershell
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+```
+
+Para instalar Loki en Minikube se creó un archivo de valores personalizado, ya que se utilizó una configuración local con almacenamiento en filesystem.
+
+Archivo:
+
+```txt
+observability/loki-values.yaml
+```
+
+Contenido:
+
+```yaml
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  storage:
+    type: filesystem
+
+singleBinary:
+  replicas: 1
+
+read:
+  replicas: 0
+
+write:
+  replicas: 0
+
+backend:
+  replicas: 0
+
+gateway:
+  enabled: false
+```
+
+Luego se instaló Loki con Helm:
+
+```powershell
+helm install loki grafana/loki `
+  --namespace observability `
+  -f observability\loki-values.yaml
+```
+
+Verificación:
+
+```powershell
+kubectl get pods -n observability
+kubectl get svc -n observability
+```
+
+Resultado esperado:
+
+```txt
+loki-0   1/1   Running
+```
+
+---
+
+### Instalación de Promtail
+
+Promtail se encarga de recolectar los logs de los pods y enviarlos a Loki.
+
+```powershell
+helm install promtail grafana/promtail `
+  --namespace observability `
+  --set config.clients[0].url=http://loki:3100/loki/api/v1/push
+```
+
+Verificación:
+
+```powershell
+kubectl get pods -n observability
+```
+
+Resultado esperado:
+
+```txt
+promtail-xxxxx   1/1   Running
+```
+
+---
+
+### Instalación de Grafana
+
+Grafana se instaló para visualizar logs y métricas desde una interfaz web.
+
+```powershell
+helm install grafana grafana/grafana `
+  --namespace observability `
+  --set adminPassword=admin `
+  --set service.type=ClusterIP
+```
+
+Verificación:
+
+```powershell
+kubectl get pods -n observability
+```
+
+Resultado esperado:
+
+```txt
+grafana-xxxxxxxxxx-xxxxx   1/1   Running
+```
+
+Para acceder a Grafana se utilizó port-forward:
+
+```powershell
+kubectl port-forward service/grafana 3000:80 -n observability
+```
+
+Luego se ingresó desde el navegador a:
+
+```txt
+http://localhost:3000
+```
+
+Credenciales utilizadas:
+
+```txt
+Usuario: admin
+Contraseña: admin
+```
+
+---
+
+### Configuración de Loki como datasource en Grafana
+
+Dentro de Grafana se agregó Loki como fuente de datos.
+
+Ruta dentro de Grafana:
+
+```txt
+Connections → Data sources → Add data source → Loki
+```
+
+URL configurada:
+
+```txt
+http://loki:3100
+```
+
+Luego se seleccionó:
+
+```txt
+Save & test
+```
+
+Con esto Grafana quedó conectado a Loki para consultar los logs recolectados por Promtail.
+
+---
+
+### Consulta de logs en Grafana
+
+Para consultar logs se ingresó a:
+
+```txt
+Grafana → Explore
+```
+
+Se seleccionó el datasource:
+
+```txt
+Loki
+```
+
+Consulta para logs del backend:
+
+```logql
+{namespace="arqsw2", app="backend"}
+```
+
+Consulta para logs del frontend:
+
+```logql
+{namespace="arqsw2", app="frontend"}
+```
+
+Consulta para logs de PostgreSQL:
+
+```logql
+{namespace="arqsw2", app="postgres"}
+```
+
+Para generar tráfico y validar que aparecieran nuevos logs, se ejecutaron requests contra la API:
+
+```powershell
+curl.exe -k https://app.local/api/health
+curl.exe -k https://app.local/api/tasks
+curl.exe -k https://app.local/api/docs
+```
+
+---
+
+### Instalación de Prometheus
+
+Para incorporar métricas del cluster se agregó el repositorio Helm de Prometheus Community:
+
+```powershell
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+
+Luego se instaló `kube-prometheus-stack` en el namespace `observability`:
+
+```powershell
+helm install prometheus prometheus-community/kube-prometheus-stack `
+  --namespace observability `
+  --set grafana.enabled=false
+```
+
+Se deshabilitó Grafana dentro del chart de Prometheus porque ya se había instalado una instancia de Grafana previamente.
+
+Verificación:
+
+```powershell
+kubectl get pods -n observability
+```
+
+Resultado esperado:
+
+```txt
+prometheus-xxxxx
+alertmanager-xxxxx
+kube-state-metrics-xxxxx
+node-exporter-xxxxx
+prometheus-operator-xxxxx
+```
+
+---
+
+### Configuración de Prometheus como datasource en Grafana
+
+Primero se verificaron los services disponibles:
+
+```powershell
+kubectl get svc -n observability
+```
+
+Luego, dentro de Grafana, se agregó Prometheus como fuente de datos.
+
+Ruta dentro de Grafana:
+
+```txt
+Connections → Data sources → Add data source → Prometheus
+```
+
+URL configurada:
+
+```txt
+http://prometheus-kube-prometheus-prometheus:9090
+```
+
+Luego se seleccionó:
+
+```txt
+Save & test
+```
+
+Con esto Grafana quedó conectado a Prometheus para consultar métricas del cluster.
+
+---
+
+### Consulta de métricas en Grafana
+
+Para consultar métricas se ingresó a:
+
+```txt
+Grafana → Explore
+```
+
+Se seleccionó el datasource:
+
+```txt
+Prometheus
+```
+
+Se probaron consultas simples en PromQL.
+
+Consulta para verificar targets activos:
+
+```promql
+up
+```
+
+Consulta para ver el estado de los pods:
+
+```promql
+kube_pod_status_phase
+```
+
+Consulta para ver métricas de CPU de contenedores:
+
+```promql
+container_cpu_usage_seconds_total
+```
+
+Estas consultas permiten validar que Prometheus está recolectando métricas del cluster y que Grafana puede consultarlas correctamente.
+
+---
+
+### Capturas de pantalla del Punto 4
+
+Las capturas correspondientes al Punto 4 se encuentran en:
+
+```txt
+docs/screenshots/
+```
+
+| Archivo | Descripción |
+|---|---|
+| `12-observability-pods.png` | Pods de observabilidad corriendo en el namespace `observability` |
+| `13-grafana-loki-datasource.png` | Loki configurado como datasource en Grafana |
+| `14-grafana-backend-logs.png` | Logs del backend consultados desde Grafana Explore |
+| `15-prometheus-datasource.png` | Prometheus configurado como datasource en Grafana |
+| `16-grafana-metrics.png` | Consulta PromQL funcionando desde Grafana Explore |
+
+### Pods de observabilidad
+
+![Pods observability](docs/screenshots/12-observability-pods.png)
+
+### Loki datasource
+
+![Loki datasource](docs/screenshots/13-grafana-loki-datasource.png)
+
+### Logs del backend en Grafana
+
+![Grafana backend logs](docs/screenshots/14-grafana-backend-logs.png)
+
+### Prometheus datasource
+
+![Prometheus datasource](docs/screenshots/15-prometheus-datasource.png)
+
+### Métricas en Grafana
+
+![Grafana metrics](docs/screenshots/16-grafana-metrics.png)
 
 ---
 
