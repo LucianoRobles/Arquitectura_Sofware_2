@@ -265,6 +265,16 @@ helm version
 git --version
 ```
 
+### Instalación rápida con winget si algo te falta
+
+| Herramienta | Comando de instalación |
+|---|---|
+| Docker Desktop | `winget install -e --id Docker.DockerDesktop` |
+| kubectl | `winget install -e --id Kubernetes.kubectl` |
+| Minikube | `winget install -e --id Kubernetes.minikube` |
+| Helm | `winget install -e --id Helm.Helm` |
+| Git | `winget install -e --id Git.Git` |
+
 ---
 
 ## Iniciar Minikube
