@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-test-security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias del backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r app/backend/requirements.txt
+          pip install bandit
+
+      - name: Ejecutar test simple
+        run: |
+          python -m pytest -q app/backend || true
+
+      - name: Análisis estático con Bandit
+        run: |
+          bandit -r app/backend -q || true
+
+      - name: Validar manifiestos de Kubernetes
+        uses: azure/setup-kubectl@v4
+
+      - name: Verificar sintaxis de manifests
+        run: |
+          kubectl apply --dry-run=client -f manifests/

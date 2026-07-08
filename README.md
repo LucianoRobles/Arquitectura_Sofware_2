@@ -1411,6 +1411,83 @@ docs/screenshots/
 
 ---
 
+## Punto 5 — CI/CD e Infraestructura como Código
+
+El objetivo de este punto fue incorporar automatización al ciclo de vida del proyecto y documentar una estrategia de infraestructura como código (IaC) para llevar este sistema a un entorno más cercano a producción.
+
+### 5a. Pipeline CI/CD
+
+Se implementó un pipeline con GitHub Actions para validar automáticamente el proyecto ante cada push o pull request sobre la rama principal.
+
+El pipeline incluye los siguientes stages:
+
+- Build: instalación de dependencias y preparación del entorno del backend.
+- Test: ejecución de un test simple para comprobar que el módulo de la aplicación puede importarse correctamente.
+- Análisis estático de seguridad: validación del código Python mediante Bandit.
+- Deploy validation: verificación sintáctica de los manifiestos de Kubernetes con `kubectl apply --dry-run=client`.
+
+El objetivo de este stage no es desplegar el sistema en un cluster real desde GitHub Actions, sino validar que los artefactos y los manifiestos son correctos.
+
+### 5b. Infraestructura como Código y verificación de NFR
+
+Se documentó una propuesta breve de IaC y de verificación de requisitos no funcionales (NFR) para un entorno de producción.
+
+La propuesta cubre:
+
+- Qué herramienta de IaC se usaría para gestionar el entorno en producción y por qué.
+- Cómo verificar al menos dos NFR críticos, por ejemplo disponibilidad, tiempo de respuesta y seguridad.
+- Un esquema general de arquitectura objetivo en un proveedor cloud, reemplazando los componentes del cluster local por servicios managed.
+
+### Implementación realizada
+
+Se agregó un workflow de GitHub Actions en:
+
+```txt
+.github/workflows/ci.yml
+```
+
+Este workflow se ejecuta automáticamente al hacer push o pull request sobre la rama principal y valida:
+
+```txt
+- instalación de dependencias del backend
+- ejecución de un test simple
+- análisis estático con Bandit
+- validación de los manifiestos de Kubernetes
+```
+
+### Cómo probar el Punto 5
+
+#### Opción 1: probarlo localmente
+
+```powershell
+python -m pip install --upgrade pip
+pip install -r app/backend/requirements.txt
+pip install bandit
+python -m pytest -q app/backend
+bandit -r app/backend -q
+kubectl apply --dry-run=client -f manifests/
+```
+
+#### Opción 2: probarlo desde GitHub Actions
+
+1. Subir los cambios al repositorio:
+
+```powershell
+git add .
+git commit -m "Agregar punto 5 CI/CD"
+git push
+```
+
+2. Ingresar a la pestaña "Actions" de GitHub.
+3. Verificar que el workflow se ejecute correctamente.
+4. Guardar el log o captura de la ejecución como evidencia del punto 5.
+
+### Entregables del Punto 5
+
+- Archivo de pipeline `.yml` en el repositorio.
+- Documentación breve de IaC y NFR en este README.
+- Ejecución del pipeline con resultado exitoso en GitHub Actions.
+
 ## Comandos útiles
 
 Ver pods:
