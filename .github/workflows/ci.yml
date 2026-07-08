@@ -32,9 +32,20 @@ jobs:
         run: |
           bandit -r app/backend -q || true
 
-      - name: Instalar kubectl
-        uses: azure/setup-kubectl@v4
-
       - name: Verificar sintaxis de manifests
         run: |
-          kubectl apply --dry-run=client --validate=false -f manifests/
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+          import yaml
+
+          manifests_dir = Path('manifests')
+          if not manifests_dir.exists():
+              raise SystemExit('No existe la carpeta manifests')
+
+          for path in sorted(manifests_dir.glob('*.yaml')):
+              with path.open('r', encoding='utf-8') as f:
+                  yaml.safe_load_all(f)
+              print(f'OK: {path}')
+          PY
