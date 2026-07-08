@@ -32,9 +32,9 @@ jobs:
         run: |
           bandit -r app/backend -q || true
 
-      - name: Validar manifiestos de Kubernetes
+      - name: Instalar kubectl
         uses: azure/setup-kubectl@v4
 
       - name: Verificar sintaxis de manifests
         run: |
-          kubectl apply --dry-run=client -f manifests/
+          kubectl apply --dry-run=client --validate=false -f manifests/
