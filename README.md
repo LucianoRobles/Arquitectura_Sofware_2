@@ -619,37 +619,6 @@ Starting tunnel for service app-ingress.
 
 ---
 
-### Verificación del Punto 2
-
-Con `minikube tunnel` activo, probar:
-
-```powershell
-curl.exe http://app.local/api/health
-```
-
-Resultado esperado:
-
-```json
-{"status":"ok","service":"backend-fastapi"}
-```
-
-También se puede probar:
-
-```powershell
-curl.exe http://app.local/api/tasks
-```
-
-Desde el navegador:
-
-```txt
-http://app.local/
-http://app.local/api/health
-http://app.local/api/tasks
-http://app.local/api/docs
-```
-
----
-
 ### Documentación Swagger de FastAPI
 
 Para acceder a la documentación automática de FastAPI a través del Ingress se configuró la aplicación con:
