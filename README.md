@@ -50,6 +50,12 @@
   * [Configuración de Prometheus como datasource en Grafana](#configuración-de-prometheus-como-datasource-en-grafana)
   * [Consulta de métricas en Grafana](#consulta-de-métricas-en-grafana)
   * [Capturas de pantalla del Punto 4](#capturas-de-pantalla-del-punto-4)
+* [Punto 5 — CI/CD e Infraestructura como Código](#punto-5--cicd-e-infraestructura-como-código)
+  * [Pipeline CI/CD](#pipeline-cicd)
+  * [Infraestructura como Código y verificación de NFR](#infraestructura-como-código-y-verificación-de-nfr)
+  * [Implementación realizada](#implementación-realizada)
+  * [Cómo probar el Punto 5](#cómo-probar-el-punto-5)
+  * [Entregables del Punto 5](#entregables-del-punto-5)
 * [Comandos útiles](#comandos-útiles)
 ---
 
