@@ -1501,3 +1501,6 @@ Borrar todos los recursos del TP:
 ```powershell
 kubectl delete namespace arqsw2
 ```
+## Conclusión
+
+Este trabajo práctico nos permitió integrar los principales conceptos abordados durante la materia, aplicándolos sobre una aplicación real. Implementamos su despliegue en Kubernetes con Minikube, la exposición mediante Ingress, HTTPS con certificados, herramientas de observabilidad para el monitoreo, un pipeline de CI/CD y una propuesta de infraestructura como código para un entorno de producción. A lo largo del desarrollo comprendimos cómo cada uno de estos componentes contribuye a construir aplicaciones más seguras, mantenibles y escalables, además de la importancia de automatizar procesos y justificar las decisiones de arquitectura tomadas. En conclusión, se cumplieron los objetivos planteados, obteniendo una solución funcional, correctamente documentada y alineada con las prácticas utilizadas actualmente para el desarrollo, despliegue y operación de aplicaciones modernas.
