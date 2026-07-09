@@ -1415,7 +1415,7 @@ docs/screenshots/
 
 El objetivo de este punto fue incorporar automatización al ciclo de vida del proyecto y documentar una estrategia de infraestructura como código (IaC) para llevar este sistema a un entorno más cercano a producción.
 
-### 5a. Pipeline CI/CD
+### Pipeline CI/CD
 
 Se implementó un pipeline con GitHub Actions para validar automáticamente el proyecto ante cada push o pull request sobre la rama principal.
 
@@ -1428,7 +1428,7 @@ El pipeline incluye los siguientes stages:
 
 El objetivo de este stage no es desplegar el sistema en un cluster real desde GitHub Actions, sino validar que los artefactos y los manifiestos son correctos.
 
-### 5b. Infraestructura como Código y verificación de NFR
+### Infraestructura como Código y verificación de NFR
 
 Se documentó una propuesta breve de IaC y de verificación de requisitos no funcionales (NFR) para un entorno de producción.
 
@@ -1482,11 +1482,6 @@ git push
 3. Verificar que el workflow se ejecute correctamente.
 4. Guardar el log o captura de la ejecución como evidencia del punto 5.
 
-### Entregables del Punto 5
-
-- Archivo de pipeline `.yml` en el repositorio.
-- Documentación breve de IaC y NFR en este README.
-- Ejecución del pipeline con resultado exitoso en GitHub Actions.
 
 ## Comandos útiles
 
