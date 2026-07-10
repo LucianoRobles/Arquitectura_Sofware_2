@@ -3,6 +3,16 @@
 **Licenciatura en Informática — UNAHUR**
 **Segundo cuatrimestre 2026**
 
+## Integrantes
+
+| Nombre y Apellido | LinkedIn |
+|-------------------|----------|
+| Diani,Julian      | https://www.linkedin.com/in/julian-diani/             |
+| Robles,Luciano    | https://www.linkedin.com/in/luciano-robles-379b4122a/ |
+| Salerno,Galo      | https://www.linkedin.com/in/galosalerno/              |
+
+
+
 ---
 
 ## Índice
@@ -1463,6 +1473,51 @@ git push
 Este trabajo práctico nos permitió integrar los principales conceptos abordados durante la materia, aplicándolos sobre una aplicación real. Implementamos su despliegue en Kubernetes con Minikube, la exposición mediante Ingress, HTTPS con certificados, herramientas de observabilidad para el monitoreo, un pipeline de CI/CD y una propuesta de infraestructura como código para un entorno de producción. A lo largo del desarrollo comprendimos cómo cada uno de estos componentes contribuye a construir aplicaciones más seguras, mantenibles y escalables, además de la importancia de automatizar procesos y justificar las decisiones de arquitectura tomadas. En conclusión, se cumplieron los objetivos planteados, obteniendo una solución funcional, correctamente documentada y alineada con las prácticas utilizadas actualmente para el desarrollo, despliegue y operación de aplicaciones modernas.
 
 ## Comandos útiles
+### Levantar el entorno automáticamente
+
+Desde PowerShell **ejecutado como Administrador**, ubicarse en la raíz del proyecto y ejecutar:
+
+```powershell
+.\setup.ps1
+```
+
+El script realiza automáticamente las siguientes tareas:
+
+- Verifica los prerrequisitos.
+- Inicia Minikube.
+- Habilita el Ingress Controller.
+- Construye las imágenes Docker del backend y frontend.
+- Despliega todos los recursos de Kubernetes.
+- Espera a que los Pods estén en estado `Ready`.
+- Inicia `minikube tunnel`.
+
+Una vez finalizado el despliegue, la aplicación estará disponible en:
+
+```txt
+https://app.local
+```
+
+### Acceder a Grafana
+
+Abrir una nueva terminal y ejecutar:
+
+```powershell
+kubectl port-forward service/grafana 3000:80 -n observability
+```
+
+Luego acceder desde el navegador a:
+
+```txt
+http://localhost:3000
+```
+
+Credenciales:
+
+```txt
+Usuario: admin
+Contraseña: admin
+```
+
 
 Ver pods:
 
